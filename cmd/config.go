@@ -17,12 +17,18 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/bfv/pascollector/misc"
 	"github.com/bfv/pascollector/types"
 )
+
+var forceOverwrite bool = false
 
 // configCmd represents the config command
 var configCmd = &cobra.Command{
@@ -34,49 +40,79 @@ var configCmd = &cobra.Command{
 	// },
 }
 
-var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "initializes the configuration",
+var setupCmd = &cobra.Command{
+	Use:   "setup",
+	Short: "setup a new configuration",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		initializeConfiguration()
+		setup()
+	},
+}
+
+var showCmd = &cobra.Command{
+	Use:   "show",
+	Short: "shows the configuration",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		showConfiguration()
 	},
 }
 
 func init() {
 
-	configCmd.AddCommand(initCmd)
+	configCmd.AddCommand(setupCmd)
+	configCmd.AddCommand(showCmd)
+
 	rootCmd.AddCommand(configCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func initializeConfiguration() {
-	fmt.Println("initialize configuration")
+func getDefaultConfiguration() types.ConfigFile {
 
 	config := types.ConfigFile{}
 	config.ClientId = "<client-id>"
+	config.Server = "<server-name>"
 	config.Tag = ""
 	config.Port = DefaultPort
 	config.CollectInterval = 60
 	config.SendInterval = 60
-	config.Servers = []types.Server{
+	config.PasInstances = []types.PasInstance{
 		{
 			Name: "oepas1",
 			Url:  "http://localhost:8810",
 		},
 	}
 
-	fmt.Println(config)
+	return config
+}
 
-	bla, _ := yaml.Marshal(config)
-	fmt.Println(string(bla))
+func showConfiguration() {
+	config, _ := yaml.Marshal(Config)
+	fmt.Println(string(config))
+}
+
+func setup() {
+
+	// check user first, on Linux it should be root
+	misc.CheckUser()
+
+	programConfigDir := misc.GetConfigDir()
+	configFilename := misc.GetConfigurationFilename()
+
+	_, err := os.Stat(programConfigDir)
+	if os.IsNotExist(err) {
+		os.Mkdir(programConfigDir, 0777)
+	}
+
+	if _, err = os.Stat(configFilename); err == nil && !forceOverwrite {
+		log.Fatal(configFilename + " exists, use -f to overwrite")
+	}
+
+	config, _ := yaml.Marshal(getDefaultConfiguration())
+	err = ioutil.WriteFile(configFilename, config, 0744)
+	if err != nil {
+		log.Fatalln("unable to create .pascollector.yaml in " + programConfigDir)
+	}
+
+	fmt.Println(configFilename + " created")
 }
