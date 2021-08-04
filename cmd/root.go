@@ -17,11 +17,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/bfv/pascollector/misc"
 	"github.com/bfv/pascollector/types"
 )
 
@@ -71,11 +71,10 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
+		configFilename := misc.GetConfigDir()
 
 		// Search config in home directory with name ".pascollector" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(configFilename)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".pascollector")
 	}
@@ -94,6 +93,6 @@ func initConfig() {
 			fmt.Println(err)
 		}
 
-		// fmt.Println(Config)
+		fmt.Println(Config)
 	}
 }
