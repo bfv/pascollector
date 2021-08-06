@@ -92,7 +92,5 @@ func initConfig() {
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		fmt.Println(Config)
 	}
 }
