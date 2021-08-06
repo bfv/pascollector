@@ -35,9 +35,6 @@ var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "A brief description of your command",
 	Long:  ``,
-	// Run: func(cmd *cobra.Command, args []string) {
-	// 	fmt.Println("config called")
-	// },
 }
 
 var setupCmd = &cobra.Command{
@@ -64,7 +61,6 @@ func init() {
 	configCmd.AddCommand(showCmd)
 
 	rootCmd.AddCommand(configCmd)
-
 }
 
 func getDefaultConfiguration() types.ConfigFile {
@@ -97,22 +93,32 @@ func setup() {
 	misc.CheckUser()
 
 	programConfigDir := misc.GetConfigDir()
+	databaseDir := misc.GetDatabaseDir()
 	configFilename := misc.GetConfigurationFilename()
 
+	// configuration directory
 	_, err := os.Stat(programConfigDir)
 	if os.IsNotExist(err) {
 		os.Mkdir(programConfigDir, 0777)
+		fmt.Printf("config dir %s created", programConfigDir)
 	}
 
 	if _, err = os.Stat(configFilename); err == nil && !forceOverwrite {
-		log.Fatal(configFilename + " exists, use -f to overwrite")
+		fmt.Println(configFilename + " exists, use -f to overwrite")
+	} else {
+		config, _ := yaml.Marshal(getDefaultConfiguration())
+		err = ioutil.WriteFile(configFilename, config, 0744)
+		if err == nil {
+			fmt.Println(configFilename + " created")
+		} else {
+			log.Fatalln("unable to create .pascollector.yaml in " + programConfigDir)
+		}
 	}
 
-	config, _ := yaml.Marshal(getDefaultConfiguration())
-	err = ioutil.WriteFile(configFilename, config, 0744)
-	if err != nil {
-		log.Fatalln("unable to create .pascollector.yaml in " + programConfigDir)
+	// database directory
+	_, err = os.Stat(databaseDir)
+	if os.IsNotExist(err) {
+		os.Mkdir(databaseDir, 0777)
+		fmt.Printf("database dir %s created", databaseDir)
 	}
-
-	fmt.Println(configFilename + " created")
 }
