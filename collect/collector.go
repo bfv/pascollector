@@ -10,15 +10,17 @@ import (
 	"time"
 
 	"github.com/Jeffail/gabs/v2"
+	"github.com/segmentio/ksuid"
 	"github.com/shirou/gopsutil/process"
 
 	"github.com/bfv/pascollector/types"
 )
 
-func CollectData(config types.ConfigFile) {
+func CollectData(config types.ConfigFile) []types.Metric {
 
 	var ablApps []types.ABLApplication
-	//fmt.Println("collect: " + time.Now().String())
+
+	metrics := []types.Metric{}
 
 	for _, instance := range config.PasInstances {
 		ablApps = getAblApps(instance)
@@ -32,13 +34,30 @@ func CollectData(config types.ConfigFile) {
 				agents[idx].Stats = agentStats
 			}
 		}
+
+		if len(ablApps) > 0 {
+
+			metric := types.Metric{}
+			metric.Id = ksuid.New().String()
+			metric.TimeStamp = time.Now().Format(time.RFC3339)
+			metric.Instance = instance.Name
+			metric.Server = config.Server
+			metric.Metrics = ablApps
+
+			//fmt.Println(metric)
+			for _, ablApp := range ablApps {
+				fmt.Printf("%s: instance: %s, ablApp: %s, agents: %d\n", metric.Id, instance.Name, ablApp.Name, len(ablApp.Agents))
+			}
+
+			metrics = append(metrics, metric)
+
+		} else {
+			fmt.Println("server not running")
+		}
+
 	}
 
-	fmt.Println(ablApps)
-}
-
-func SendData(config types.ConfigFile) {
-	fmt.Println("send: " + time.Now().String())
+	return metrics
 }
 
 func callGetOeManager(instance types.PasInstance, endpoint string) ([]byte, error) {
@@ -112,7 +131,8 @@ func getAgentStats(instance types.PasInstance, ablApp types.ABLApplication, agen
 
 	if err == nil {
 		jsonParsed, _ := gabs.ParseJSON(body)
-		children := jsonParsed.Path("result.agents").Children()
+		children := jsonParsed.Path("result.AgentStatHist").Children()
+
 		if len(children) > 0 {
 			jsonBytes := children[0].Bytes()
 			json.Unmarshal(jsonBytes, &agentStat)
