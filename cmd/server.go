@@ -87,7 +87,7 @@ func startServer() {
 
 	go startListener()
 	go dataCollector()
-	go DataSender()
+	go dataSender()
 
 	wg.Wait()
 
@@ -131,7 +131,7 @@ func dataCollector() {
 	}
 }
 
-func DataSender() {
+func dataSender() {
 
 	ticker := time.NewTicker(time.Duration(Config.SendInterval) * time.Second)
 
