@@ -25,7 +25,7 @@ import (
 // passwdCmd represents the passwd command
 var passwdCmd = &cobra.Command{
 	Use:   "passwd",
-	Short: "A brief description of your command",
+	Short: "Tool for generating safe passwords for PAS credentials",
 	Long:  ``,
 }
 

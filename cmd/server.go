@@ -32,7 +32,7 @@ var wg sync.WaitGroup
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "A brief description of your command",
+	Short: "Starts/stop the server/daemon part of the PasCollector",
 	Long:  ``,
 	// Run:   runServerCommand,
 }

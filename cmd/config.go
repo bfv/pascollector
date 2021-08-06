@@ -39,7 +39,7 @@ var configCmd = &cobra.Command{
 
 var setupCmd = &cobra.Command{
 	Use:   "setup",
-	Short: "setup a new configuration",
+	Short: "Setup a new configuration",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		setup()
@@ -48,7 +48,7 @@ var setupCmd = &cobra.Command{
 
 var showCmd = &cobra.Command{
 	Use:   "show",
-	Short: "shows the configuration",
+	Short: "Shows the configuration",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		showConfiguration()
