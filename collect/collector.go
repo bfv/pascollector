@@ -13,13 +13,17 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/shirou/gopsutil/process"
 
+	"github.com/bfv/pascollector/misc"
 	"github.com/bfv/pascollector/types"
 )
 
-func CollectData(config types.ConfigFile) []types.Metric {
+var config types.ConfigFile
+
+func CollectData(cfg types.ConfigFile) []types.Metric {
 
 	var ablApps []types.ABLApplication
 
+	config = cfg
 	metrics := []types.Metric{}
 
 	for _, instance := range config.PasInstances {
@@ -65,9 +69,8 @@ func callGetOeManager(instance types.PasInstance, endpoint string) ([]byte, erro
 	client := &http.Client{}
 	url := instance.Url + "/oemanager" + endpoint
 
-	auth := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(instance.Creds)))
 	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Add("Authorization", auth) // "Basic YmZ2OmJmdg=="
+	req.Header.Add("Authorization", getAuthString(instance)) // "Basic YmZ2OmJmdg=="
 
 	res, err := client.Do(req)
 
@@ -77,6 +80,10 @@ func callGetOeManager(instance types.PasInstance, endpoint string) ([]byte, erro
 	}
 
 	return nil, err
+}
+
+func getAuthString(instance types.PasInstance) string {
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(misc.Decrypt(instance.Creds)))
 }
 
 func getAblApps(instance types.PasInstance) []types.ABLApplication {
