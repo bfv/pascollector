@@ -25,6 +25,22 @@ func GetConfigDir() string {
 	return configDir
 }
 
+func GetDatabaseDir() string {
+
+	var dbDir string
+
+	switch osName := runtime.GOOS; osName {
+	case "windows":
+		dbDir = os.Getenv("ProgramData") + "\\"
+	case "linux":
+		dbDir = "/var/lib/"
+	}
+
+	dbDir += "pascollector"
+
+	return dbDir
+}
+
 func GetConfigurationFilename() string {
 	return GetConfigDir() + string(os.PathSeparator) + ".pascollector.yaml"
 }
