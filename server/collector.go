@@ -1,4 +1,4 @@
-package collect
+package server
 
 import (
 	"encoding/base64"
@@ -17,16 +17,13 @@ import (
 	"github.com/bfv/pascollector/types"
 )
 
-var config types.ConfigFile
-
-func CollectData(cfg types.ConfigFile) []types.Metric {
+func CollectData() []types.Metric {
 
 	var ablApps []types.ABLApplication
 
-	config = cfg
 	metrics := []types.Metric{}
 
-	for _, instance := range config.PasInstances {
+	for _, instance := range Config.PasInstances {
 		ablApps = getAblApps(instance)
 
 		for idx, ablApp := range ablApps {
@@ -45,7 +42,7 @@ func CollectData(cfg types.ConfigFile) []types.Metric {
 			metric.Id = ksuid.New().String()
 			metric.TimeStamp = time.Now().Format(time.RFC3339)
 			metric.Instance = instance.Name
-			metric.Server = config.Server
+			metric.Server = Config.Server
 			metric.Metrics = ablApps
 
 			//fmt.Println(metric)
