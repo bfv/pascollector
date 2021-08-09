@@ -22,9 +22,6 @@ forloop:
 			break forloop
 		}
 	}
-
-	fmt.Println("end sender.SendData")
-
 }
 
 func processMetric(metric types.Metric) {

@@ -45,10 +45,9 @@ func CollectData() []types.Metric {
 			metric.Server = Config.Server
 			metric.Metrics = ablApps
 
-			//fmt.Println(metric)
-			for _, ablApp := range ablApps {
-				fmt.Printf("%s: instance: %s, ablApp: %s, agents: %d\n", metric.Id, instance.Name, ablApp.Name, len(ablApp.Agents))
-			}
+			// for _, ablApp := range ablApps {
+			// 	fmt.Printf("%s: instance: %s, ablApp: %s, agents: %d\n", metric.Id, instance.Name, ablApp.Name, len(ablApp.Agents))
+			// }
 
 			metrics = append(metrics, metric)
 
