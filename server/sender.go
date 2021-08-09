@@ -2,11 +2,36 @@ package server
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/bfv/pascollector/types"
 )
 
 func SendData(config types.ConfigFile) {
-	fmt.Println("send: " + time.Now().String())
+
+	chData := make(chan types.Metric)
+	chQuit := make(chan bool)
+
+	go getStoredData(chData, chQuit)
+
+forloop:
+	for {
+		select {
+		case metric := <-chData:
+			processMetric(metric)
+		case <-chQuit:
+			break forloop
+		}
+	}
+
+	fmt.Println("end sender.SendData")
+
+}
+
+func processMetric(metric types.Metric) {
+	// do whatever is necessary with the metrics here
+	// for now we just print them
+	_, err := fmt.Println("metric:", metric)
+	if err == nil {
+		deleteMetric(metric.Id)
+	}
 }

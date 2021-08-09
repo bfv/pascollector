@@ -92,3 +92,30 @@ func initStore() {
 	})
 
 }
+
+func getStoredData(chData chan types.Metric, chQuit chan bool) {
+
+	fmt.Println("store.getStoredData")
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("DB")).Bucket([]byte("METRICS"))
+		b.ForEach(func(k, v []byte) error {
+			metric := byteArrayToMetric(v)
+			chData <- metric
+			return nil
+		})
+		return nil
+	})
+	fmt.Println("before quit")
+	chQuit <- true
+	fmt.Println("after quit")
+}
+
+func deleteMetric(id string) {
+
+	db.Update(func(tx *bolt.Tx) error {
+
+		b := tx.Bucket([]byte("DB")).Bucket([]byte("METRICS"))
+		b.Delete([]byte(id))
+		return nil
+	})
+}
