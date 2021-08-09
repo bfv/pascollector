@@ -79,7 +79,7 @@ func startServer() {
 }
 
 func stopServer() {
-	server.Stop()
+	server.Stop(Config)
 }
 
 func displayConfig() {

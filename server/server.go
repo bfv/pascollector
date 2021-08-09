@@ -2,6 +2,9 @@ package server
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -14,11 +17,13 @@ var Config types.ConfigFile
 func Start(cfg types.ConfigFile) {
 
 	Config = cfg
+	chStore := make(chan types.Metric, 10)
 
 	wg.Add(1)
 
 	go startListener()
-	go dataCollector()
+	go dataCollector(chStore)
+	go dataStore(chStore)
 	go dataSender()
 
 	wg.Wait()
@@ -26,19 +31,30 @@ func Start(cfg types.ConfigFile) {
 	fmt.Println("server stopped")
 }
 
-func Stop() {
-	defer wg.Done()
+func Stop(cfg types.ConfigFile) {
+
+	Config = cfg
 	fmt.Println("stopping server...")
-	fmt.Println("server stopped")
+	res, err := http.Get("http://localhost:" + strconv.Itoa(Config.Port) + "/stop")
+	if err == nil {
+		defer res.Body.Close()
+		body, _ := io.ReadAll(res.Body)
+		fmt.Println(string(body))
+	} else {
+		fmt.Println(err)
+	}
 }
 
-func dataCollector() {
+func dataCollector(ch chan types.Metric) {
 
 	ticker := time.NewTicker(time.Duration(Config.CollectInterval) * time.Second)
 
 	for {
 		<-ticker.C
-		CollectData()
+		metrics := CollectData()
+		for _, metric := range metrics {
+			ch <- metric
+		}
 	}
 }
 

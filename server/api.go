@@ -9,8 +9,9 @@ import (
 func startListener() {
 
 	http.HandleFunc("/stop", func(w http.ResponseWriter, r *http.Request) {
-		defer Stop()
-		fmt.Println("stop request received")
+		defer wg.Done()
+		fmt.Println("stop request received...")
+		CloseDB()
 		fmt.Fprintf(w, "OK")
 	})
 
