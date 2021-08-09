@@ -27,16 +27,14 @@ func GetConfigDir() string {
 
 func GetDatabaseDir() string {
 
-	var dbDir string
+	dbDir := "pascollector"
 
 	switch osName := runtime.GOOS; osName {
 	case "windows":
-		dbDir = os.Getenv("ProgramData") + "\\"
+		dbDir = os.Getenv("ProgramData") + "\\" + dbDir + "\\"
 	case "linux":
-		dbDir = "/var/lib/"
+		dbDir = "/var/lib/" + dbDir + "/"
 	}
-
-	dbDir += "pascollector"
 
 	return dbDir
 }
